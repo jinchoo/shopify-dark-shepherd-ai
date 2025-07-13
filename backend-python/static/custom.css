@@ -1,0 +1,294 @@
+/* Custom FastAPI Docs Styling */
+
+/* Import Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+/* Custom CSS Variables - DarkShepherd.ai Theme (Exact Match) */
+:root {
+  --primary-color: #10b981; /* green-500 */
+  --primary-dark: #059669; /* green-600 */
+  --primary-light: #34d399; /* green-400 */
+  --secondary-color: #10b981;
+  --accent-color: #f59e0b;
+  --danger-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+  --dark-bg: #111827; /* gray-900 */
+  --darker-bg: #111827; /* gray-900 */
+  --light-bg: #1f2937; /* gray-800 */
+  --border-color: #374151; /* gray-700 */
+  --text-primary: #ffffff; /* white */
+  --text-secondary: #d1d5db; /* gray-300 */
+  --text-muted: #9ca3af; /* gray-400 */
+  --card-bg: #1f2937; /* gray-800 */
+  --hover-bg: #374151; /* gray-700 */
+  --gradient-green: linear-gradient(
+    to right,
+    #059669,
+    #10b981
+  ); /* green-600 to green-500 */
+  --gradient-green-hover: linear-gradient(
+    to right,
+    #047857,
+    #059669
+  ); /* green-700 to green-600 */
+}
+
+/* Global Styles */
+* {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+body {
+  background: var(--darker-bg);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+/* Header Styling */
+.swagger-ui .topbar {
+  background: var(--dark-bg) !important;
+  border-bottom: 3px solid var(--primary-color);
+  padding: 1rem 0;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+  display: none;
+}
+
+.swagger-ui .topbar .link {
+  color: white !important;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+/* Main Content Area */
+.swagger-ui .wrapper {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin: 2rem auto;
+  max-width: 1200px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* Sidebar Styling */
+.swagger-ui .sidebar {
+  background: var(--dark-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.swagger-ui .sidebar .sidebar-list {
+  padding: 1rem 0;
+}
+
+.swagger-ui .sidebar .sidebar-list li {
+  margin: 0.5rem 0;
+}
+
+.swagger-ui .sidebar .sidebar-list li a {
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.swagger-ui .sidebar .sidebar-list li a:hover {
+  background: var(--primary-color);
+  color: var(--dark-bg);
+  transform: translateX(4px);
+}
+
+/* Operation Blocks */
+.swagger-ui .opblock {
+  border-radius: 12px;
+  margin: 1rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+}
+
+.swagger-ui .opblock.opblock-get {
+  border-color: var(--info-color);
+}
+
+.swagger-ui .opblock.opblock-post {
+  border-color: var(--success-color);
+}
+
+.swagger-ui .opblock.opblock-put {
+  border-color: var(--warning-color);
+}
+
+.swagger-ui .opblock.opblock-delete {
+  border-color: var(--danger-color);
+}
+
+.swagger-ui .opblock .opblock-summary {
+  padding: 1rem;
+  background: var(--dark-bg);
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+  border-radius: 8px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.swagger-ui .opblock .opblock-summary-description {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Buttons */
+.swagger-ui .btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.swagger-ui .btn.execute {
+  background: var(--gradient-green);
+  color: var(--text-primary);
+  font-weight: 600;
+  border: none;
+}
+
+.swagger-ui .btn.execute:hover {
+  background: var(--gradient-green-hover);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+/* Response Section */
+.swagger-ui .responses-wrapper {
+  background: var(--card-bg);
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+.swagger-ui .responses-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.swagger-ui .responses-table th {
+  background: var(--dark-bg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Code Blocks */
+.swagger-ui .highlight-code {
+  background: var(--darker-bg);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.swagger-ui .highlight-code .microlight {
+  color: #e5e7eb;
+  font-family: "Fira Code", "Monaco", "Consolas", monospace;
+}
+
+/* Models */
+.swagger-ui .model {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid var(--border-color);
+}
+
+.swagger-ui .model-title {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Tags */
+.swagger-ui .opblock-tag {
+  border-bottom: 2px solid var(--border-color);
+  margin: 2rem 0 1rem 0;
+  padding-bottom: 1rem;
+}
+
+.swagger-ui .opblock-tag-section h3 {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+/* Loading Animation */
+.swagger-ui .loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.swagger-ui .loading-container::after {
+  content: "";
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .swagger-ui .wrapper {
+    margin: 1rem;
+    border-radius: 8px;
+  }
+
+  .swagger-ui .opblock .opblock-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .swagger-ui .opblock .opblock-summary-method {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--light-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
