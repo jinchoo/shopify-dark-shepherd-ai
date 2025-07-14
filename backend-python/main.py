@@ -19,6 +19,7 @@ from routers import security, analytics, fraud
 
 load_dotenv()
 
+# Configure CORS
 app = FastAPI(
     title="🛡️ DarkShepherd.ai Security API",
     description="""
@@ -76,31 +77,218 @@ app = FastAPI(
     custom_css="""
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
-        body { background: #111827 !important; color: #ffffff !important; font-family: 'Inter', sans-serif !important; }
-        .swagger-ui .topbar { background: #1f2937 !important; border-bottom: 2px solid #10b981 !important; }
-        .swagger-ui .wrapper { background: #1f2937 !important; border: 1px solid #374151 !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; }
-        .swagger-ui .sidebar { background: #111827 !important; }
-        .swagger-ui .opblock { border: 1px solid #374151 !important; background: #1f2937 !important; border-radius: 8px !important; }
-        .swagger-ui .opblock .opblock-summary { background: #111827 !important; }
-        .swagger-ui .btn.execute { background: linear-gradient(to right, #059669, #10b981) !important; color: #ffffff !important; font-weight: 600 !important; border-radius: 6px !important; }
-        .swagger-ui .btn.execute:hover { background: linear-gradient(to right, #047857, #059669) !important; transform: translateY(-1px) !important; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important; }
-        .swagger-ui .responses-wrapper { background: #1f2937 !important; border: 1px solid #374151 !important; }
-        .swagger-ui .model { background: #1f2937 !important; border: 1px solid #374151 !important; }
-        .swagger-ui .opblock-tag-section h3 { color: #ffffff !important; font-weight: 600 !important; }
-        .swagger-ui .sidebar .sidebar-list li a { color: #d1d5db !important; font-weight: 500 !important; }
-        .swagger-ui .sidebar .sidebar-list li a:hover { background: #10b981 !important; color: #ffffff !important; }
-        .swagger-ui .opblock-summary-description { color: #ffffff !important; font-weight: 500 !important; }
-        .swagger-ui .opblock-summary-method { font-weight: 600 !important; font-size: 0.875rem !important; }
-        .swagger-ui .responses-table th { background: #111827 !important; color: #ffffff !important; font-weight: 600 !important; }
-        .swagger-ui .model-title { color: #ffffff !important; font-weight: 600 !important; }
-        .swagger-ui .opblock-summary-control svg, .swagger-ui .opblock-summary-control svg path, .swagger-ui .opblock-summary-control > svg, .swagger-ui .opblock-summary-control > svg > path { fill: #10b981 !important; stroke: #10b981 !important; color: #10b981 !important; filter: drop-shadow(0 0 2px #10b981) !important; }
-        .swagger-ui .opblock-summary-control { color: #10b981 !important; }
-        .swagger-ui .opblock-summary-control svg, .swagger-ui .opblock-summary-control svg path { color: #10b981 !important; fill: #10b981 !important; stroke: #10b981 !important; filter: drop-shadow(0 0 2px #10b981) !important; }
-        .swagger-ui .opblock-summary-control svg { filter: invert(40%) sepia(100%) saturate(1000%) hue-rotate(120deg) brightness(1.2) !important; }
-        .swagger-ui .arrow { fill: #10b981 !important; color: #10b981 !important; stroke: #10b981 !important; }
-        .swagger-ui .model-title, .swagger-ui .model-title span, .swagger-ui .model-box, .swagger-ui .model-box *, .swagger-ui .models-control, .swagger-ui .models-control label, .swagger-ui .models-control label span { color: #ffffff !important; }
+        
+        /* Main background - matches home page gradient */
+        body { 
+            background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%) !important; 
+            color: #ffffff !important; 
+            font-family: 'Inter', sans-serif !important; 
+            min-height: 100vh !important;
+        }
+        
+        /* Topbar - matches home page dark theme */
+        .swagger-ui .topbar { 
+            background: #1f2937 !important; 
+            border-bottom: 2px solid #4ade80 !important; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Main wrapper - matches home page card styling */
+        .swagger-ui .wrapper { 
+            background: rgba(31, 41, 55, 0.8) !important; 
+            border: 1px solid #374151 !important; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; 
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        /* Sidebar - matches home page dark theme */
+        .swagger-ui .sidebar { 
+            background: #111827 !important; 
+            border-right: 1px solid #374151 !important;
+        }
+        
+        /* Operation blocks - matches home page card styling */
+        .swagger-ui .opblock { 
+            border: 1px solid #374151 !important; 
+            background: rgba(31, 41, 55, 0.5) !important; 
+            border-radius: 12px !important; 
+            margin-bottom: 16px !important;
+            backdrop-filter: blur(10px) !important;
+        }
+        
+        .swagger-ui .opblock .opblock-summary { 
+            background: #111827 !important; 
+            border-radius: 12px 12px 0 0 !important;
+        }
+        
+        /* Execute button - matches home page green gradient */
+        .swagger-ui .btn.execute { 
+            background: linear-gradient(to right, #16a34a, #4ade80) !important; 
+            color: #ffffff !important; 
+            font-weight: 600 !important; 
+            border-radius: 8px !important; 
+            border: none !important;
+            padding: 8px 16px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .swagger-ui .btn.execute:hover { 
+            background: linear-gradient(to right, #15803d, #16a34a) !important; 
+            transform: translateY(-2px) !important; 
+            box-shadow: 0 8px 25px rgba(74, 222, 128, 0.4) !important; 
+        }
+        
+        /* Response areas */
+        .swagger-ui .responses-wrapper { 
+            background: rgba(31, 41, 55, 0.8) !important; 
+            border: 1px solid #374151 !important; 
+            border-radius: 0 0 12px 12px !important;
+        }
+        
+        .swagger-ui .model { 
+            background: rgba(31, 41, 55, 0.8) !important; 
+            border: 1px solid #374151 !important; 
+            border-radius: 8px !important;
+        }
+        
+        /* Headers and titles */
+        .swagger-ui .opblock-tag-section h3 { 
+            color: #ffffff !important; 
+            font-weight: 700 !important; 
+            font-size: 1.5rem !important;
+        }
+        
+        /* Sidebar navigation */
+        .swagger-ui .sidebar .sidebar-list li a { 
+            color: #d1d5db !important; 
+            font-weight: 500 !important; 
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .swagger-ui .sidebar .sidebar-list li a:hover { 
+            background: #4ade80 !important; 
+            color: #ffffff !important; 
+            transform: translateX(4px) !important;
+        }
+        
+        /* Operation descriptions */
+        .swagger-ui .opblock-summary-description { 
+            color: #d1d5db !important; 
+            font-weight: 500 !important; 
+        }
+        
+        .swagger-ui .opblock-summary-method { 
+            font-weight: 700 !important; 
+            font-size: 0.875rem !important; 
+            border-radius: 6px !important;
+        }
+        
+        /* Tables */
+        .swagger-ui .responses-table th { 
+            background: #111827 !important; 
+            color: #ffffff !important; 
+            font-weight: 600 !important; 
+        }
+        
+        /* Model titles */
+        .swagger-ui .model-title { 
+            color: #ffffff !important; 
+            font-weight: 600 !important; 
+        }
+        
+        /* Control icons - green accent */
+        .swagger-ui .opblock-summary-control svg, 
+        .swagger-ui .opblock-summary-control svg path, 
+        .swagger-ui .opblock-summary-control > svg, 
+        .swagger-ui .opblock-summary-control > svg > path { 
+            fill: #4ade80 !important; 
+            stroke: #4ade80 !important; 
+            color: #4ade80 !important; 
+            filter: drop-shadow(0 0 4px #4ade80) !important; 
+        }
+        
+        .swagger-ui .opblock-summary-control { 
+            color: #4ade80 !important; 
+        }
+        
+        .swagger-ui .opblock-summary-control svg, 
+        .swagger-ui .opblock-summary-control svg path { 
+            color: #4ade80 !important; 
+            fill: #4ade80 !important; 
+            stroke: #4ade80 !important; 
+            filter: drop-shadow(0 0 4px #4ade80) !important; 
+        }
+        
+        .swagger-ui .opblock-summary-control svg { 
+            filter: invert(40%) sepia(100%) saturate(1000%) hue-rotate(120deg) brightness(1.2) !important; 
+        }
+        
+        .swagger-ui .arrow { 
+            fill: #4ade80 !important; 
+            color: #4ade80 !important; 
+            stroke: #4ade80 !important; 
+        }
+        
+        /* Model boxes */
+        .swagger-ui .model-title, 
+        .swagger-ui .model-title span, 
+        .swagger-ui .model-box, 
+        .swagger-ui .model-box *, 
+        .swagger-ui .models-control, 
+        .swagger-ui .models-control label, 
+        .swagger-ui .models-control label span { 
+            color: #ffffff !important; 
+        }
+        
+        /* Additional styling for better consistency */
+        .swagger-ui .info .title { 
+            color: #4ade80 !important; 
+            font-weight: 700 !important; 
+        }
+        
+        .swagger-ui .info .description { 
+            color: #d1d5db !important; 
+        }
+        
+        .swagger-ui .scheme-container { 
+            background: rgba(31, 41, 55, 0.8) !important; 
+            border: 1px solid #374151 !important; 
+            border-radius: 8px !important;
+        }
+        
+        .swagger-ui .auth-wrapper { 
+            background: rgba(31, 41, 55, 0.8) !important; 
+            border: 1px solid #374151 !important; 
+            border-radius: 8px !important;
+        }
+        
+        /* Input fields */
+        .swagger-ui input[type=text], 
+        .swagger-ui textarea { 
+            background: #111827 !important; 
+            border: 1px solid #374151 !important; 
+            color: #ffffff !important; 
+            border-radius: 6px !important;
+        }
+        
+        .swagger-ui input[type=text]:focus, 
+        .swagger-ui textarea:focus { 
+            border-color: #4ade80 !important; 
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2) !important;
+        }
     """
-)  # <-- CLOSE the constructor here
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # ============================================================================
 # ENUMS
@@ -198,6 +386,283 @@ class ErrorResponse(BaseModel):
 class SuccessResponse(BaseModel):
     success: bool
     message: str
+
+# ============================================================================
+# CUSTOM DOCS ENDPOINT
+# ============================================================================
+
+@app.get("/docs-custom", response_class=HTMLResponse)
+async def custom_docs():
+    """Custom dark-themed API documentation"""
+    html = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🛡️ DarkShepherd.ai - API Documentation</title>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+            
+            * { 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; 
+            }
+            
+            /* Main background - matches home page gradient exactly */
+            body { 
+                background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #0f172a 100%) !important; 
+                color: #ffffff !important; 
+                font-family: 'Inter', sans-serif !important; 
+                min-height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Topbar - matches home page dark theme */
+            .swagger-ui .topbar { 
+                background: #111827 !important; 
+                border-bottom: 2px solid #4ade80 !important; 
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+            }
+            
+            /* Main wrapper - matches home page card styling */
+            .swagger-ui .wrapper { 
+                background: rgba(17, 24, 39, 0.5) !important; 
+                border: 1px solid #374151 !important; 
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important; 
+                backdrop-filter: blur(10px) !important;
+            }
+            
+            /* Sidebar - matches home page dark theme */
+            .swagger-ui .sidebar { 
+                background: #111827 !important; 
+                border-right: 1px solid #374151 !important;
+            }
+            
+            /* Operation blocks - matches home page card styling */
+            .swagger-ui .opblock { 
+                border: 1px solid #374151 !important; 
+                background: rgba(17, 24, 39, 0.5) !important; 
+                border-radius: 12px !important; 
+                margin-bottom: 16px !important;
+                backdrop-filter: blur(10px) !important;
+            }
+            
+            .swagger-ui .opblock .opblock-summary { 
+                background: #111827 !important; 
+                border-radius: 12px 12px 0 0 !important;
+            }
+            
+            /* Execute button - matches home page green gradient */
+            .swagger-ui .btn.execute { 
+                background: linear-gradient(to right, #16a34a, #4ade80) !important; 
+                color: #ffffff !important; 
+                font-weight: 600 !important; 
+                border-radius: 8px !important; 
+                border: none !important;
+                padding: 8px 16px !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            .swagger-ui .btn.execute:hover { 
+                background: linear-gradient(to right, #15803d, #16a34a) !important; 
+                transform: translateY(-2px) !important; 
+                box-shadow: 0 8px 25px rgba(74, 222, 128, 0.4) !important; 
+            }
+            
+            /* Response areas */
+            .swagger-ui .responses-wrapper { 
+                background: rgba(17, 24, 39, 0.5) !important; 
+                border: 1px solid #374151 !important; 
+                border-radius: 0 0 12px 12px !important;
+            }
+            
+            .swagger-ui .model { 
+                background: rgba(17, 24, 39, 0.5) !important; 
+                border: 1px solid #374151 !important; 
+                border-radius: 8px !important;
+            }
+            
+            /* Headers and titles */
+            .swagger-ui .opblock-tag-section h3 { 
+                color: #ffffff !important; 
+                font-weight: 700 !important; 
+                font-size: 1.5rem !important;
+            }
+            
+            /* Sidebar navigation */
+            .swagger-ui .sidebar .sidebar-list li a { 
+                color: #d1d5db !important; 
+                font-weight: 500 !important; 
+                padding: 8px 12px !important;
+                border-radius: 6px !important;
+                transition: all 0.3s ease !important;
+            }
+            
+            .swagger-ui .sidebar .sidebar-list li a:hover { 
+                background: #4ade80 !important; 
+                color: #ffffff !important; 
+                transform: translateX(4px) !important;
+            }
+            
+            /* Operation descriptions */
+            .swagger-ui .opblock-summary-description { 
+                color: #d1d5db !important; 
+                font-weight: 500 !important; 
+            }
+            
+            .swagger-ui .opblock-summary-method { 
+                font-weight: 700 !important; 
+                font-size: 0.875rem !important; 
+                border-radius: 6px !important;
+            }
+            
+            /* Tables */
+            .swagger-ui .responses-table th { 
+                background: #111827 !important; 
+                color: #ffffff !important; 
+                font-weight: 600 !important; 
+            }
+            
+            /* Model titles */
+            .swagger-ui .model-title { 
+                color: #ffffff !important; 
+                font-weight: 600 !important; 
+            }
+            
+            /* Control icons - green accent */
+            .swagger-ui .opblock-summary-control svg, 
+            .swagger-ui .opblock-summary-control svg path, 
+            .swagger-ui .opblock-summary-control > svg, 
+            .swagger-ui .opblock-summary-control > svg > path { 
+                fill: #4ade80 !important; 
+                stroke: #4ade80 !important; 
+                color: #4ade80 !important; 
+                filter: drop-shadow(0 0 4px #4ade80) !important; 
+            }
+            
+            .swagger-ui .opblock-summary-control { 
+                color: #4ade80 !important; 
+            }
+            
+            .swagger-ui .opblock-summary-control svg, 
+            .swagger-ui .opblock-summary-control svg path { 
+                color: #4ade80 !important; 
+                fill: #4ade80 !important; 
+                stroke: #4ade80 !important; 
+                filter: drop-shadow(0 0 4px #4ade80) !important; 
+            }
+            
+            .swagger-ui .opblock-summary-control svg { 
+                filter: invert(40%) sepia(100%) saturate(1000%) hue-rotate(120deg) brightness(1.2) !important; 
+            }
+            
+            .swagger-ui .arrow { 
+                fill: #4ade80 !important; 
+                color: #4ade80 !important; 
+                stroke: #4ade80 !important; 
+            }
+            
+            /* Model boxes */
+            .swagger-ui .model-title, 
+            .swagger-ui .model-title span, 
+            .swagger-ui .model-box, 
+            .swagger-ui .model-box *, 
+            .swagger-ui .models-control, 
+            .swagger-ui .models-control label, 
+            .swagger-ui .models-control label span { 
+                color: #ffffff !important; 
+            }
+            
+            /* Additional styling for better consistency */
+            .swagger-ui .info .title { 
+                color: #4ade80 !important; 
+                font-weight: 700 !important; 
+            }
+            
+            .swagger-ui .info .description { 
+                color: #d1d5db !important; 
+            }
+            
+            .swagger-ui .scheme-container { 
+                background: rgba(17, 24, 39, 0.5) !important; 
+                border: 1px solid #374151 !important; 
+                border-radius: 8px !important;
+            }
+            
+            /* Override any remaining light elements */
+            .swagger-ui * { 
+                color: inherit !important; 
+            }
+            
+            .swagger-ui input, 
+            .swagger-ui textarea, 
+            .swagger-ui select { 
+                background: #111827 !important; 
+                border: 1px solid #374151 !important; 
+                color: #ffffff !important; 
+            }
+            
+            /* Ensure all text is visible */
+            .swagger-ui .opblock-summary-path, 
+            .swagger-ui .opblock-summary-path__deprecated { 
+                color: #ffffff !important; 
+            }
+            
+            .swagger-ui .opblock-summary-method { 
+                color: #ffffff !important; 
+            }
+            
+            /* Fix any remaining background issues */
+            .swagger-ui .opblock-summary { 
+                background: #111827 !important; 
+            }
+            
+            .swagger-ui .opblock-summary-description { 
+                color: #d1d5db !important; 
+            }
+        </style>
+    </head>
+    <body>
+        <div id="swagger-ui"></div>
+        <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+        <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+        <script>
+            window.onload = function() {
+                const ui = SwaggerUIBundle({
+                    url: '/openapi.json',
+                    dom_id: '#swagger-ui',
+                    deepLinking: true,
+                    presets: [
+                        SwaggerUIBundle.presets.apis,
+                        SwaggerUIStandalonePreset
+                    ],
+                    plugins: [
+                        SwaggerUIBundle.plugins.DownloadUrl
+                    ],
+                    layout: "StandaloneLayout",
+                    docExpansion: 'list',
+                    defaultModelsExpandDepth: 1,
+                    defaultModelExpandDepth: 1,
+                    displayRequestDuration: true,
+                    filter: true,
+                    showExtensions: true,
+                    showCommonExtensions: true,
+                    tryItOutEnabled: true,
+                    requestInterceptor: function(request) {
+                        return request;
+                    },
+                    responseInterceptor: function(response) {
+                        return response;
+                    }
+                });
+            };
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
 
 # ============================================================================
 # HEALTH & SYSTEM

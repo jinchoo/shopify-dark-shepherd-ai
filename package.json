@@ -16,7 +16,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev": "concurrently \"npm start\" \"cd backend-python && python3 main.py\"",
+    "dev:backend": "cd backend-python && python3 main.py",
+    "dev:frontend": "npm start"
   },
   "eslintConfig": {
     "extends": [
@@ -39,6 +42,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "babel-loader": "^10.0.0",
+    "concurrently": "^9.2.0",
     "postcss": "^8.5.6",
     "react-scripts": "^5.0.1"
   }
