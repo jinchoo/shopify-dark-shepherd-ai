@@ -4,7 +4,7 @@ import { useTier } from "./TierContext";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { tier, config, selectedProtections } = useTier();
+  const { tier, config, selectedProtections, swapCount } = useTier();
   const [activeTab, setActiveTab] = useState("subscription");
   const [emailAlerts, setEmailAlerts] = useState(true);
   const [smsAlerts, setSmsAlerts] = useState(false);
@@ -21,8 +21,14 @@ const Settings = () => {
     0,
     selectedProtections.length - config.included
   );
-  const extraCost = extraProtections * config.extra;
-  const totalCost = config.price + extraCost;
+  const extraCost = extraProtections * config.addonsPrice;
+
+  // Calculate swap charges (only for Pup SR. - $5 per swap beyond the free one)
+  const freeSwaps = tier === "Pup SR." ? 1 : 0;
+  const paidSwaps = Math.max(0, swapCount - freeSwaps);
+  const swapCharges = paidSwaps * config.swapPrice;
+
+  const totalCost = config.price + extraCost + swapCharges;
 
   const tabs = [
     { id: "subscription", label: "Subscription & Billing", icon: "💳" },
@@ -149,7 +155,7 @@ const Settings = () => {
                       Extra charges starting today:
                     </span>
                     <span className="text-yellow-400 font-semibold">
-                      +${extraCost}
+                      +${extraCost + swapCharges}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -188,7 +194,15 @@ const Settings = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-300">Extra Protections:</span>
                   <span className="text-yellow-400 font-semibold">
-                    +{extraProtections} (${extraCost}/mo)
+                    +{extraProtections} (${config.addonsPrice}/mo)
+                  </span>
+                </div>
+              )}
+              {swapCharges > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-300">Swap Charges:</span>
+                  <span className="text-red-400 font-semibold">
+                    +${swapCharges}/mo
                   </span>
                 </div>
               )}
@@ -217,7 +231,9 @@ const Settings = () => {
                 >
                   {protection}
                   {index >= config.included && (
-                    <span className="ml-1 text-xs">(+$10)</span>
+                    <span className="ml-1 text-xs">
+                      (+${config.addonsPrice})
+                    </span>
                   )}
                 </span>
               ))}

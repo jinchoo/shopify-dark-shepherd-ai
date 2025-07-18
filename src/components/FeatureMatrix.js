@@ -1,69 +1,111 @@
 import React from "react";
 import { useTier } from "./TierContext";
 
-const features = [
-  {
-    name: "Basic fraud scan",
-    tiers: ["Pup Basic", "Pup Pro", "Guardian", "Alpha", "Enterprise"],
+// Define tierConfig locally to match TierContext
+const tierConfig = {
+  // Free plan: simple, no add-ons, no swaps
+  "Pup JR.": {
+    price: 0,
+    included: 3,
+    max: 3,
+    extra: 0, // No add-ons
+    swap: 0, // No swaps
+    swapPrice: 0,
+    addons: 0,
+    addonsPrice: 0,
   },
-  {
-    name: "Weekly summary",
-    tiers: ["Pup Basic", "Pup Pro", "Guardian", "Alpha", "Enterprise"],
+  // Pup SR.: 6 included, max 2 add-ons @$10/protection, 1 free swap/month, then $5/swap
+  "Pup SR.": {
+    price: 99,
+    included: 6,
+    max: 8, // 6 included + 2 add-ons
+    extra: 2, // Max add-ons
+    addons: 2,
+    addonsPrice: 10,
+    swap: 1, // 1 free swap/month
+    swapPrice: 5, // $5 per extra swap
   },
-  {
-    name: "Basic alerts",
-    tiers: ["Pup Basic", "Pup Pro", "Guardian", "Alpha", "Enterprise"],
+  // Guardian: 9 included, max 3 add-ons, unlimited swaps
+  Guardian: {
+    price: 199,
+    included: 9,
+    max: 12, // 9 included + 3 add-ons
+    extra: 3,
+    addons: 3,
+    addonsPrice: 10,
+    swap: Infinity, // Unlimited swaps
+    swapPrice: 0,
+    unlimitedSwap: true,
   },
-  {
-    name: "Advanced analytics",
-    tiers: ["Pup Pro", "Guardian", "Alpha", "Enterprise"],
+  // Alpha: 12 active, unlimited add-ons, unlimited swaps
+  Alpha: {
+    price: 299,
+    included: 12,
+    max: Infinity, // Unlimited protections
+    extra: Infinity,
+    addons: Infinity,
+    addonsPrice: 0,
+    swap: Infinity,
+    swapPrice: 0,
+    unlimitedSwap: true,
+    unlimitedProtection: true,
   },
-  {
-    name: "AI assistant",
-    tiers: ["Pup Pro", "Guardian", "Alpha", "Enterprise"],
+  // Enterprise: hidden
+  Enterprise: {
+    price: 2500,
+    included: 15,
+    max: 15,
+    extra: 0,
+    contact: true,
   },
-  {
-    name: "PCI compliance tools",
-    tiers: ["Pup Pro", "Guardian", "Alpha", "Enterprise"],
-  },
-  {
-    name: "Priority support",
-    tiers: ["Pup Pro", "Guardian", "Alpha", "Enterprise"],
-  },
-  {
-    name: "Real-time threat intelligence",
-    tiers: ["Guardian", "Alpha", "Enterprise"],
-  },
-  {
-    name: "Account takeover (ATO) protection",
-    tiers: ["Guardian", "Alpha", "Enterprise"],
-  },
-  {
-    name: "Bot mitigation (CAPTCHA, rate limits)",
-    tiers: ["Guardian", "Alpha", "Enterprise"],
-  },
-  { name: "Chargeback guarantee/insurance", tiers: ["Alpha", "Enterprise"] },
-  { name: "Custom rules engine", tiers: ["Alpha", "Enterprise"] },
-  { name: "API access / integrations", tiers: ["Alpha", "Enterprise"] },
-  { name: "SLA / Uptime guarantee", tiers: ["Alpha", "Enterprise"] },
-  { name: "Dedicated account manager", tiers: ["Enterprise"] },
-  { name: "Custom onboarding/training", tiers: ["Enterprise"] },
-  { name: "Multi-store/brand support", tiers: ["Enterprise"] },
-  { name: "Audit log export / compliance reports", tiers: ["Enterprise"] },
-  { name: "Custom security consulting", tiers: ["Enterprise"] },
-];
+};
 
-const tiers = ["Pup Basic", "Pup Pro", "Guardian", "Alpha", "Enterprise"];
+const tiers = ["Pup JR.", "Pup SR.", "Guardian", "Alpha"];
 
 const FeatureMatrix = () => {
-  const { tier } = useTier();
+  const { tier, allProtections } = useTier();
+
+  // Add CSS to remove only the vertical border between Alpha and Contact Sales
+  React.useEffect(() => {
+    const style = document.createElement("style");
+    style.textContent = `
+      .feature-matrix-table th:nth-child(5) {
+        border-right: none !important;
+      }
+      .feature-matrix-table th:nth-child(6) {
+        border-left: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // For each tier, get the set of included protections (first N from allProtections)
+  const tierProtections = {};
+  tiers.forEach((tierOption) => {
+    const config = tierConfig[tierOption];
+    tierProtections[tierOption] = allProtections.slice(0, config.included);
+  });
+
+  // Helper to render add-on and swap rules
+  const renderAddonSwap = (tierOption) => {
+    const config = tierConfig[tierOption];
+    if (tierOption === "Pup JR.") return "No add-ons or swaps";
+    if (tierOption === "Pup SR.")
+      return `Up to 2 add-ons ($10 each), 1 free swap/month, $5 per extra swap`;
+    if (tierOption === "Guardian")
+      return `Up to 3 add-ons ($10 each), unlimited swaps`;
+    if (tierOption === "Alpha") return `Unlimited add-ons, unlimited swaps`;
+    return "-";
+  };
+
   return (
     <div className="flex flex-col h-full flex-1 min-h-0 p-6 bg-gray-900 rounded-xl shadow-lg">
       <h2 className="text-xl font-bold mb-4 text-white">
         Feature Matrix by Tier
       </h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full border-separate border-spacing-y-1">
+        <table className="min-w-full border-separate border-spacing-y-1 feature-matrix-table">
           <thead>
             <tr>
               <th className="bg-gray-800 text-white px-4 py-2 rounded-tl-lg">
@@ -78,33 +120,49 @@ const FeatureMatrix = () => {
                       : "bg-gray-800 text-gray-200"
                   }`}
                 >
-                  {tierOption}
+                  {tierOption === "Pup JR." ? (
+                    <span style={{ whiteSpace: "nowrap" }}>Pup JR.</span>
+                  ) : tierOption === "Pup SR." ? (
+                    <span style={{ whiteSpace: "nowrap" }}>Pup SR.</span>
+                  ) : (
+                    tierOption
+                  )}
                 </th>
               ))}
+              <th className="px-4 py-2 font-semibold bg-gray-800 text-green-400 rounded-tr-lg">
+                <a
+                  href="/contact-sales"
+                  className="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition"
+                >
+                  Contact Sales
+                </a>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {features.map((feature) => (
-              <tr key={feature.name} className="">
+            {/* Feature/protection rows */}
+            {allProtections.map((protection) => (
+              <tr key={protection} className="">
                 <td className="bg-gray-800 text-white px-4 py-2 rounded-l-lg">
-                  {feature.name}
+                  {protection}
                 </td>
                 {tiers.map((tierOption) => (
                   <td
                     key={tierOption}
-                    className={`text-center px-4 py-2 ${
-                      tier === tierOption
-                        ? "bg-green-900 text-green-200"
-                        : "bg-gray-800 text-gray-100"
-                    } ${tierOption === "Enterprise" ? "rounded-r-lg" : ""}`}
+                    className={`px-4 py-2 text-center ${
+                      tierOption === "Alpha" ? "rounded-r-lg" : ""
+                    }`}
                   >
-                    {feature.tiers.includes(tierOption) ? (
+                    {tierProtections[tierOption].includes(protection) ? (
                       <span className="text-green-400 text-lg">&#10003;</span>
                     ) : (
-                      ""
+                      <span className="text-gray-600">-</span>
                     )}
                   </td>
                 ))}
+                <td className="text-center px-4 py-2 bg-gray-800 text-green-400 font-semibold">
+                  —
+                </td>
               </tr>
             ))}
           </tbody>

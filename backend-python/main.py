@@ -60,7 +60,7 @@ app = FastAPI(
         "name": "MIT",
         "url": "https://opensource.org/licenses/MIT",
     },
-    docs_url="/docs-dark",
+    docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     swagger_ui_parameters={
@@ -390,6 +390,15 @@ class SuccessResponse(BaseModel):
 # ============================================================================
 # CUSTOM DOCS ENDPOINT
 # ============================================================================
+
+@app.get("/docs-dark", response_class=HTMLResponse)
+async def dark_docs():
+    """Serve the custom dark-themed HTML file"""
+    try:
+        with open("dark_docs.html", "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="Dark docs file not found", status_code=404)
 
 @app.get("/docs-custom", response_class=HTMLResponse)
 async def custom_docs():

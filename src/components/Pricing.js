@@ -3,19 +3,21 @@ import { useNavigate } from "react-router-dom";
 
 const tiers = [
   {
-    name: "Pup Basic",
+    name: "Pup JR.",
     price: 0,
     included: 3,
     extra: 0,
-    description: "Basic protection for small shops. 3 protections included.",
+    description:
+      "Simple, free plan. 3 protections included. No add-ons or swaps.",
     popular: false,
   },
   {
-    name: "Pup Pro",
+    name: "Pup SR.",
     price: 99,
     included: 6,
     extra: 10,
-    description: "6 protections included. $10 for each extra.",
+    description:
+      "6 protections included. Up to 2 add-ons ($10 each). 1 free swap/month, then $5 per swap.",
     popular: true,
   },
   {
@@ -23,7 +25,8 @@ const tiers = [
     price: 199,
     included: 9,
     extra: 10,
-    description: "9 protections included. $10 for each extra.",
+    description:
+      "9 protections included. Up to 3 add-ons ($10 each). Unlimited swaps.",
     popular: false,
   },
   {
@@ -31,15 +34,8 @@ const tiers = [
     price: 299,
     included: 12,
     extra: 0,
-    description: "Unlimited swaps, 12 active protections at a time.",
-    popular: false,
-  },
-  {
-    name: "Enterprise",
-    price: 2500,
-    included: "Unlimited",
-    extra: 0,
-    description: "Contact Sales Representatives for custom solutions.",
+    description:
+      "12 active protections. Unlimited add-ons. Unlimited swaps and protections.",
     popular: false,
   },
 ];
@@ -89,7 +85,7 @@ const Pricing = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
           {tiers.map((tier) => (
             <div
               key={tier.name}
@@ -164,9 +160,9 @@ const Pricing = () => {
               <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-green-400 font-bold">1</span>
               </div>
-              <h3 className="text-white font-semibold mb-2">Pup Pro</h3>
+              <h3 className="text-white font-semibold mb-2">Pup JR.</h3>
               <p className="text-gray-400 text-sm">
-                6 included, $10 for each extra
+                3 included. No add-ons or swaps.
               </p>
             </div>
 
@@ -174,9 +170,10 @@ const Pricing = () => {
               <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-green-400 font-bold">2</span>
               </div>
-              <h3 className="text-white font-semibold mb-2">Guardian</h3>
+              <h3 className="text-white font-semibold mb-2">Pup SR.</h3>
               <p className="text-gray-400 text-sm">
-                9 included, $10 for each extra
+                6 included, up to 2 add-ons ($10 each). 1 free swap/month, $5
+                per extra swap.
               </p>
             </div>
 
@@ -184,9 +181,9 @@ const Pricing = () => {
               <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-green-400 font-bold">3</span>
               </div>
-              <h3 className="text-white font-semibold mb-2">Alpha</h3>
+              <h3 className="text-white font-semibold mb-2">Guardian</h3>
               <p className="text-gray-400 text-sm">
-                Unlimited swaps, 12 active at a time
+                9 included, up to 3 add-ons ($10 each). Unlimited swaps.
               </p>
             </div>
 
@@ -194,8 +191,10 @@ const Pricing = () => {
               <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-green-400 font-bold">4</span>
               </div>
-              <h3 className="text-white font-semibold mb-2">Enterprise</h3>
-              <p className="text-gray-400 text-sm">Unlimited, contact sales</p>
+              <h3 className="text-white font-semibold mb-2">Alpha</h3>
+              <p className="text-gray-400 text-sm">
+                12 active, unlimited add-ons, unlimited swaps and protections.
+              </p>
             </div>
           </div>
         </div>
