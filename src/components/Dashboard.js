@@ -656,8 +656,7 @@ const Dashboard = () => {
             {/* Add One More Add-on Button (outside modal) */}
             {(() => {
               const isDisabled =
-                selectedProtections.length >= tierConfig[tier].max ||
-                swapCount >= tierConfig[tier].swap;
+                selectedProtections.length >= tierConfig[tier].max;
 
               console.log("Outside modal button condition:", {
                 tier,
@@ -666,6 +665,10 @@ const Dashboard = () => {
                 swapCount,
                 maxSwaps: tierConfig[tier].swap,
                 isDisabled,
+                reason:
+                  selectedProtections.length >= tierConfig[tier].max
+                    ? "Max protections reached"
+                    : "Can add more",
               });
 
               return (
@@ -805,8 +808,7 @@ const Dashboard = () => {
               {(() => {
                 const shouldShowButton = tier === "Pup SR.";
                 const isDisabled =
-                  selectedProtections.length >= tierConfig[tier].max ||
-                  swapCount >= tierConfig[tier].swap;
+                  selectedProtections.length >= tierConfig[tier].max;
 
                 console.log("Add One More Add-on button condition:", {
                   tier,
@@ -816,10 +818,10 @@ const Dashboard = () => {
                   maxSwaps: tierConfig[tier].swap,
                   shouldShowButton,
                   isDisabled,
-                  condition1:
-                    selectedProtections.length >= tierConfig[tier].max,
-                  condition2: swapCount >= tierConfig[tier].swap,
-                  tierConfig: tierConfig[tier],
+                  reason:
+                    selectedProtections.length >= tierConfig[tier].max
+                      ? "Max protections reached"
+                      : "Can add more",
                 });
 
                 return shouldShowButton ? (
