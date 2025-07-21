@@ -256,14 +256,6 @@ const Dashboard = () => {
           const isFreeSwap = swapCount === 0 && tier === "Pup SR.";
           const isUnlimitedSwap = tier === "Guardian" || tier === "Alpha";
 
-          console.log("Swap logic triggered:", {
-            removedProtection,
-            isFreeSwap,
-            isUnlimitedSwap,
-            swapCount,
-            tier,
-          });
-
           if (isFreeSwap || isUnlimitedSwap) {
             setOriginalProtections([...selectedProtections]);
             setPendingProtection(protection);
@@ -520,6 +512,7 @@ const Dashboard = () => {
             </span>
           </div>
         )}
+
         {swapCharges > 0 && (
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">
@@ -657,19 +650,6 @@ const Dashboard = () => {
             {(() => {
               const isDisabled =
                 selectedProtections.length >= tierConfig[tier].max;
-
-              console.log("Outside modal button condition:", {
-                tier,
-                selectedProtectionsLength: selectedProtections.length,
-                max: tierConfig[tier].max,
-                swapCount,
-                maxSwaps: tierConfig[tier].swap,
-                isDisabled,
-                reason:
-                  selectedProtections.length >= tierConfig[tier].max
-                    ? "Max protections reached"
-                    : "Can add more",
-              });
 
               return (
                 <button
@@ -809,20 +789,6 @@ const Dashboard = () => {
                 const shouldShowButton = tier === "Pup SR.";
                 const isDisabled =
                   selectedProtections.length >= tierConfig[tier].max;
-
-                console.log("Add One More Add-on button condition:", {
-                  tier,
-                  selectedProtectionsLength: selectedProtections.length,
-                  max: tierConfig[tier].max,
-                  swapCount,
-                  maxSwaps: tierConfig[tier].swap,
-                  shouldShowButton,
-                  isDisabled,
-                  reason:
-                    selectedProtections.length >= tierConfig[tier].max
-                      ? "Max protections reached"
-                      : "Can add more",
-                });
 
                 return shouldShowButton ? (
                   <button
