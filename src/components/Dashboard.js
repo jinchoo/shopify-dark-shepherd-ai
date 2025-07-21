@@ -251,10 +251,18 @@ const Dashboard = () => {
 
       // If not at max, check if we're in swap mode first
       if (currentCount < maxProtections) {
-        // If we're in swap mode, treat this as a swap
-        if (isInSwapMode && removedProtection) {
+        // If we just removed a protection (creating swap opportunity), treat as swap
+        if (removedProtection) {
           const isFreeSwap = swapCount === 0 && tier === "Pup SR.";
           const isUnlimitedSwap = tier === "Guardian" || tier === "Alpha";
+
+          console.log("Swap logic triggered:", {
+            removedProtection,
+            isFreeSwap,
+            isUnlimitedSwap,
+            swapCount,
+            tier,
+          });
 
           if (isFreeSwap || isUnlimitedSwap) {
             setOriginalProtections([...selectedProtections]);
