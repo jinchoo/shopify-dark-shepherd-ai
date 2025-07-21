@@ -9,7 +9,7 @@ const Analytics = () => {
     0,
     selectedProtections.length - config.included
   );
-  const extraCost = extraProtections * config.extra;
+  const extraCost = extraProtections * config.addonsPrice;
   const totalCost = config.price + extraCost;
 
   return (
@@ -33,7 +33,7 @@ const Analytics = () => {
         {extraProtections > 0 && (
           <div className="flex justify-between items-center mb-2">
             <span className="text-gray-300">
-              Extra Protections ({extraProtections} × ${config.extra}):
+              Extra Protections ({extraProtections} × ${config.addonsPrice}):
             </span>
             <span className="text-green-400 font-semibold">
               +${extraCost}/mo
