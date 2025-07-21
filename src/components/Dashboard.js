@@ -647,11 +647,41 @@ const Dashboard = () => {
                 ? "You have reached the maximum number of add-ons for your tier."
                 : "You have a free add-on available this month. Select a protection above to add it without additional cost."}
             </p>
-            <div className="text-yellow-400 text-xs">
+            <div className="text-yellow-400 text-xs mb-3">
               Swaps used: {swapCount}/{tierConfig[tier].swap} | Add-ons
               remaining:{" "}
               {Math.max(0, tierConfig[tier].max - selectedProtections.length)}
             </div>
+
+            {/* Add One More Add-on Button (outside modal) */}
+            {(() => {
+              const isDisabled =
+                selectedProtections.length >= tierConfig[tier].max ||
+                swapCount >= tierConfig[tier].swap;
+
+              console.log("Outside modal button condition:", {
+                tier,
+                selectedProtectionsLength: selectedProtections.length,
+                max: tierConfig[tier].max,
+                swapCount,
+                maxSwaps: tierConfig[tier].swap,
+                isDisabled,
+              });
+
+              return (
+                <button
+                  onClick={handleAddOneMoreAddon}
+                  disabled={isDisabled}
+                  className={`w-full px-4 py-2 font-semibold rounded-lg transition-all duration-200 transform ${
+                    isDisabled
+                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                      : "bg-yellow-600 hover:bg-yellow-500 text-white hover:scale-105"
+                  }`}
+                >
+                  {isDisabled ? "Max Add-ons Reached" : "Add One More Add-on"}
+                </button>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -786,6 +816,10 @@ const Dashboard = () => {
                   maxSwaps: tierConfig[tier].swap,
                   shouldShowButton,
                   isDisabled,
+                  condition1:
+                    selectedProtections.length >= tierConfig[tier].max,
+                  condition2: swapCount >= tierConfig[tier].swap,
+                  tierConfig: tierConfig[tier],
                 });
 
                 return shouldShowButton ? (
