@@ -42,7 +42,7 @@ const LoginPage = ({ onLoginSuccess }) => {
       if (onLoginSuccess) {
         onLoginSuccess();
       } else {
-        navigate("/app");
+        navigate("/dashboard");
       }
     }, 1000);
   };
