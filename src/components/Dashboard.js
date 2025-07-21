@@ -410,27 +410,6 @@ const Dashboard = () => {
     setShowAddOnConfirmationModal(false);
   };
 
-  // For Pup SR.: Add one more add-on without updating billing
-  const handleAddOneMoreAddon = () => {
-    console.log("handleAddOneMoreAddon called with:", {
-      pendingProtection,
-      selectedProtections: selectedProtections.length,
-      tier,
-      max: tierConfig[tier].max,
-    });
-
-    if (pendingProtection) {
-      setSelectedProtections([...selectedProtections, pendingProtection]);
-      setPendingProtection(null);
-      setShowBillingModal(false);
-      // Don't increment swap count for add-ons - only for swaps
-      // Reset swap mode if we were in it
-      setIsInSwapMode(false);
-      setRemovedProtection(null);
-      setOriginalProtections([]);
-    }
-  };
-
   // Handle tier change
   const handleTierChange = (newTier) => {
     setTier(newTier);
@@ -542,6 +521,18 @@ const Dashboard = () => {
               <span style={{ paddingLeft: "2.2ch", display: "inline-block" }}>
                 $5 per extra swap. Swaps used: {swapCount}/1 free
               </span>
+              {swapCount === 0 &&
+                selectedProtections.length < tierConfig[tier].max && (
+                  <div className="mt-2 text-yellow-300 font-semibold">
+                    ✨ Free swap available! Click on a protection to swap it.
+                  </div>
+                )}
+              {selectedProtections.length >= tierConfig[tier].max && (
+                <div className="mt-2 text-red-300 font-semibold">
+                  ⚠️ Max add-ons reached ({selectedProtections.length}/
+                  {tierConfig[tier].max})
+                </div>
+              )}
             </>
           )}
           {tier === "Guardian" &&
@@ -625,49 +616,6 @@ const Dashboard = () => {
           );
         })}
       </div>
-
-      {/* Add One More Add-on Button for Pup SR. */}
-      {tier === "Pup SR." && (
-        <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-          <div className="text-center">
-            <h3 className="text-yellow-400 font-semibold mb-2">
-              {selectedProtections.length >= tierConfig[tier].max
-                ? "Max Add-ons Reached"
-                : "Free Add-on Available"}
-            </h3>
-            <p className="text-gray-300 text-sm mb-3">
-              {selectedProtections.length >= tierConfig[tier].max
-                ? "You have reached the maximum number of add-ons for your tier."
-                : "You have a free add-on available this month. Select a protection above to add it without additional cost."}
-            </p>
-            <div className="text-yellow-400 text-xs mb-3">
-              Swaps used: {swapCount}/{tierConfig[tier].swap} | Add-ons
-              remaining:{" "}
-              {Math.max(0, tierConfig[tier].max - selectedProtections.length)}
-            </div>
-
-            {/* Add One More Add-on Button (outside modal) */}
-            {(() => {
-              const isDisabled =
-                selectedProtections.length >= tierConfig[tier].max;
-
-              return (
-                <button
-                  onClick={handleAddOneMoreAddon}
-                  disabled={isDisabled}
-                  className={`w-full px-4 py-2 font-semibold rounded-lg transition-all duration-200 transform ${
-                    isDisabled
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-yellow-600 hover:bg-yellow-500 text-white hover:scale-105"
-                  }`}
-                >
-                  {isDisabled ? "Max Add-ons Reached" : "Add One More Add-on"}
-                </button>
-              );
-            })()}
-          </div>
-        </div>
-      )}
 
       {selectedProtections.length > 0 && (
         <div className="mt-auto p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
@@ -785,25 +733,7 @@ const Dashboard = () => {
                   Free Swap Available
                 </button>
               )}
-              {(() => {
-                const shouldShowButton = tier === "Pup SR.";
-                const isDisabled =
-                  selectedProtections.length >= tierConfig[tier].max;
 
-                return shouldShowButton ? (
-                  <button
-                    onClick={handleAddOneMoreAddon}
-                    disabled={isDisabled}
-                    className={`flex-1 px-4 py-2 font-semibold rounded-lg transition-all duration-200 transform ${
-                      isDisabled
-                        ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                        : "bg-yellow-600 hover:bg-yellow-500 text-white hover:scale-105"
-                    }`}
-                  >
-                    {isDisabled ? "Max Add-ons Reached" : "Add One More Add-on"}
-                  </button>
-                ) : null;
-              })()}
               <button
                 onClick={handleConfirmExtra}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
