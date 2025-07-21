@@ -1,14 +1,26 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTier } from "./TierContext";
 
 const Settings = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { tier, config, selectedProtections, swapCount } = useTier();
   const [activeTab, setActiveTab] = useState("subscription");
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [smsAlerts, setSmsAlerts] = useState(false);
-  const [pushNotifications, setPushNotifications] = useState(true);
+  const [emailAlerts, setEmailAlerts] = useState(() => {
+    const saved = localStorage.getItem("emailAlerts");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [smsAlerts, setSmsAlerts] = useState(() => {
+    const saved = localStorage.getItem("smsAlerts");
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+  const [pushNotifications, setPushNotifications] = useState(() => {
+    const saved = localStorage.getItem("pushNotifications");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [showBillingSuccess, setShowBillingSuccess] = useState(false);
+  const [showSettingsSaved, setShowSettingsSaved] = useState(false);
 
   // Modal states
   const [showUsageModal, setShowUsageModal] = useState(false);
@@ -29,6 +41,19 @@ const Settings = () => {
   const swapCharges = paidSwaps * config.swapPrice;
 
   const totalCost = config.price + extraCost + swapCharges;
+
+  // Check if user arrived from add-on confirmation
+  useEffect(() => {
+    if (location.state?.fromAddOnConfirmation) {
+      setShowBillingSuccess(true);
+      setActiveTab("subscription");
+      // Auto-hide success message after 5 seconds
+      const timer = setTimeout(() => {
+        setShowBillingSuccess(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const tabs = [
     { id: "subscription", label: "Subscription & Billing", icon: "💳" },
@@ -69,6 +94,32 @@ const Settings = () => {
     );
     setShowCancelModal(false);
     setCancelReason("");
+  };
+
+  // Handle notification setting changes
+  const handleEmailAlertsChange = (checked) => {
+    setEmailAlerts(checked);
+    localStorage.setItem("emailAlerts", JSON.stringify(checked));
+    showSettingsSavedMessage();
+  };
+
+  const handleSmsAlertsChange = (checked) => {
+    setSmsAlerts(checked);
+    localStorage.setItem("smsAlerts", JSON.stringify(checked));
+    showSettingsSavedMessage();
+  };
+
+  const handlePushNotificationsChange = (checked) => {
+    setPushNotifications(checked);
+    localStorage.setItem("pushNotifications", JSON.stringify(checked));
+    showSettingsSavedMessage();
+  };
+
+  const showSettingsSavedMessage = () => {
+    setShowSettingsSaved(true);
+    setTimeout(() => {
+      setShowSettingsSaved(false);
+    }, 2000);
   };
 
   // Mock usage data
@@ -123,6 +174,24 @@ const Settings = () => {
 
   const renderSubscriptionTab = () => (
     <div className="space-y-6">
+      {/* Success Message */}
+      {showBillingSuccess && (
+        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+          <div className="flex items-start space-x-3">
+            <div className="text-green-400 text-xl">✅</div>
+            <div>
+              <h4 className="text-green-400 font-semibold mb-2">
+                Add-On Successfully Added!
+              </h4>
+              <p className="text-gray-300">
+                Your protection has been added to your plan. Your billing will
+                be updated on your next cycle.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Current Plan */}
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
@@ -137,7 +206,7 @@ const Settings = () => {
           <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
             <div className="flex items-start space-x-3">
               <div className="text-yellow-400 text-xl">💰</div>
-              <div>
+              <div className="flex-1">
                 <h4 className="text-yellow-400 font-semibold mb-2">
                   Billing Update
                 </h4>
@@ -149,7 +218,7 @@ const Settings = () => {
                   </span>{" "}
                   beyond your plan's included protections.
                 </p>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text-sm mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-400">
                       Extra charges starting today:
@@ -166,6 +235,38 @@ const Settings = () => {
                       ${totalCost}
                     </span>
                   </div>
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() =>
+                      navigate("/payment", {
+                        state: {
+                          fromSettings: true,
+                          extraProtections: extraProtections,
+                          extraCost: extraCost + swapCharges,
+                          currentTier: tier,
+                          totalCost: totalCost,
+                          pendingAddOns: selectedProtections.filter(
+                            (_, index) => index >= config.included
+                          ),
+                        },
+                      })
+                    }
+                    className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    💳 Pay Now (${extraCost + swapCharges})
+                  </button>
+                  <button
+                    onClick={() => {
+                      // This could open a modal to update billing info or show payment history
+                      alert(
+                        "Billing will be updated on your next cycle. You can manage your payment method in the billing section below."
+                      );
+                    }}
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200"
+                  >
+                    Manage Billing
+                  </button>
                 </div>
               </div>
             </div>
@@ -347,6 +448,23 @@ const Settings = () => {
 
   const renderNotificationsTab = () => (
     <div className="space-y-6">
+      {/* Settings Saved Message */}
+      {showSettingsSaved && (
+        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+          <div className="flex items-start space-x-3">
+            <div className="text-green-400 text-xl">✅</div>
+            <div>
+              <h4 className="text-green-400 font-semibold mb-2">
+                Settings Saved!
+              </h4>
+              <p className="text-gray-300">
+                Your notification preferences have been updated and saved.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-gray-800 border border-gray-700 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">
           Notification Preferences
@@ -358,13 +476,16 @@ const Settings = () => {
               <h4 className="text-white font-semibold">Email Alerts</h4>
               <p className="text-gray-400 text-sm">
                 Receive security alerts via email
+                <span className="text-green-400 text-xs ml-2">
+                  (Auto-saved)
+                </span>
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={emailAlerts}
-                onChange={(e) => setEmailAlerts(e.target.checked)}
+                onChange={(e) => handleEmailAlertsChange(e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
@@ -376,13 +497,16 @@ const Settings = () => {
               <h4 className="text-white font-semibold">SMS Alerts</h4>
               <p className="text-gray-400 text-sm">
                 Receive urgent alerts via SMS
+                <span className="text-green-400 text-xs ml-2">
+                  (Auto-saved)
+                </span>
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={smsAlerts}
-                onChange={(e) => setSmsAlerts(e.target.checked)}
+                onChange={(e) => handleSmsAlertsChange(e.target.checked)}
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
@@ -394,13 +518,18 @@ const Settings = () => {
               <h4 className="text-white font-semibold">Push Notifications</h4>
               <p className="text-gray-400 text-sm">
                 Receive notifications in the app
+                <span className="text-green-400 text-xs ml-2">
+                  (Auto-saved)
+                </span>
               </p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 checked={pushNotifications}
-                onChange={(e) => setPushNotifications(e.target.checked)}
+                onChange={(e) =>
+                  handlePushNotificationsChange(e.target.checked)
+                }
                 className="sr-only peer"
               />
               <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
