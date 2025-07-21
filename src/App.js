@@ -17,6 +17,8 @@ import {
 import Dashboard from "./components/Dashboard";
 import Pricing from "./components/Pricing";
 import Settings from "./components/Settings";
+import Payment from "./components/Payment";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const featureDetails = {
   "AI Fraud Detection": {
@@ -384,6 +386,8 @@ const OnboardingProtectedRoute = ({ children }) => {
     onboardingCompleted
   );
 
+  console.log("OnboardingProtectedRoute: About to render children:", children);
+
   if (loading) {
     console.log("OnboardingProtectedRoute: Showing loading spinner");
     return (
@@ -410,73 +414,99 @@ const OnboardingProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  console.log("App: Rendering main App component");
   return (
-    <AuthProvider>
-      <TierProvider>
-        <Router>
-          <NavBar />
-          <div className="App">
-            <Routes>
-              <Route path="/" element={<PublicLanding />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route
-                path="/settings"
-                element={
-                  <OnboardingProtectedRoute>
-                    <Settings />
-                  </OnboardingProtectedRoute>
-                }
-              />
-              <Route
-                path="/analytics"
-                element={
-                  <OnboardingProtectedRoute>
-                    <Analytics />
-                  </OnboardingProtectedRoute>
-                }
-              />
-              <Route
-                path="/onboarding"
-                element={
-                  <ProtectedRoute>
-                    <Onboarding />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <OnboardingProtectedRoute>
-                    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 py-8 px-4">
-                      <div className="max-w-7xl mx-auto">
-                        <div className="text-center mb-8">
-                          <h1 className="text-3xl font-bold text-white mb-2">
-                            Dashboard
-                          </h1>
-                          <p className="text-gray-400">
-                            Manage your security protections and monitor your
-                            store
-                          </p>
-                        </div>
-                        <div className="flex flex-col lg:flex-row gap-8 items-stretch min-h-[500px]">
-                          <div className="flex-1 h-full">
-                            <FeatureMatrix />
+    <ErrorBoundary>
+      <AuthProvider>
+        <TierProvider>
+          <Router>
+            <NavBar />
+            <div className="App">
+              <Routes>
+                <Route path="/" element={<PublicLanding />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route
+                  path="/settings"
+                  element={
+                    <OnboardingProtectedRoute>
+                      <Settings />
+                    </OnboardingProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/payment"
+                  element={
+                    <OnboardingProtectedRoute>
+                      <Payment />
+                    </OnboardingProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <OnboardingProtectedRoute>
+                      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 py-8 px-4">
+                        <div className="max-w-7xl mx-auto">
+                          <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-white mb-2">
+                              Security Analytics
+                            </h1>
+                            <p className="text-gray-400">
+                              Monitor your security protections and track
+                              performance
+                            </p>
                           </div>
-                          <div className="flex-1 h-full">
-                            <Dashboard />
+                          <div className="h-full">
+                            <Analytics />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </OnboardingProtectedRoute>
-                }
-              />
-            </Routes>
-          </div>
-        </Router>
-      </TierProvider>
-    </AuthProvider>
+                    </OnboardingProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <Onboarding />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <OnboardingProtectedRoute>
+                      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 py-8 px-4">
+                        <div className="max-w-7xl mx-auto">
+                          <div className="text-center mb-8">
+                            <h1 className="text-3xl font-bold text-white mb-2">
+                              Dashboard
+                            </h1>
+                            <p className="text-gray-400">
+                              Manage your security protections and monitor your
+                              store
+                            </p>
+                          </div>
+                          <div className="flex flex-col lg:flex-row gap-8 items-stretch min-h-[500px]">
+                            <div className="flex-1 h-full">
+                              <FeatureMatrix />
+                            </div>
+                            <div className="flex-1 h-full">
+                              <Dashboard />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </OnboardingProtectedRoute>
+                  }
+                />
+              </Routes>
+            </div>
+          </Router>
+        </TierProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
