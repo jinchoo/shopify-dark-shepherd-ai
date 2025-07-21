@@ -2,6 +2,65 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTier } from "./TierContext";
 
+// Import tierConfig directly
+const tierConfig = {
+  // Free plan: simple, no add-ons, no swaps
+  "Pup JR.": {
+    price: 0,
+    included: 3,
+    max: 3,
+    extra: 0, // No add-ons
+    swap: 0, // No swaps
+    swapPrice: 0,
+    addons: 0,
+    addonsPrice: 0,
+  },
+  // Pup SR.: 6 included, max 2 add-ons @$10/protection, 1 free swap/month, then $5/swap
+  "Pup SR.": {
+    price: 99,
+    included: 6,
+    max: 8, // 6 included + 2 add-ons
+    extra: 2, // Max add-ons
+    addons: 2,
+    addonsPrice: 10,
+    swap: 1, // 1 free swap/month
+    swapPrice: 5, // $5 per extra swap
+  },
+  // Guardian: 9 included, max 3 add-ons, unlimited swaps
+  Guardian: {
+    price: 199,
+    included: 9,
+    max: 12, // 9 included + 3 add-ons
+    extra: 3,
+    addons: 3,
+    addonsPrice: 10,
+    swap: Infinity, // Unlimited swaps
+    swapPrice: 0,
+    unlimitedSwap: true,
+  },
+  // Alpha: 12 active, unlimited add-ons, unlimited swaps
+  Alpha: {
+    price: 299,
+    included: 12,
+    max: Infinity, // Unlimited protections
+    extra: Infinity,
+    addons: Infinity,
+    addonsPrice: 0,
+    swap: Infinity,
+    swapPrice: 0,
+    unlimitedSwap: true,
+    unlimitedProtection: true,
+  },
+  // Enterprise: hidden
+  Enterprise: {
+    price: 2500,
+    included: 15,
+    max: 15,
+    extra: 0,
+    contact: true,
+  },
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const {
@@ -18,6 +77,8 @@ const Dashboard = () => {
   const [showSwapModal, setShowSwapModal] = useState(false);
   const [showSwapChargeModal, setShowSwapChargeModal] = useState(false);
   const [showSwapSelectionModal, setShowSwapSelectionModal] = useState(false);
+  const [showAddOnConfirmationModal, setShowAddOnConfirmationModal] =
+    useState(false);
   const [pendingProtection, setPendingProtection] = useState(null);
   const [originalProtections, setOriginalProtections] = useState([]);
   const [isInSwapMode, setIsInSwapMode] = useState(false);
@@ -54,6 +115,18 @@ const Dashboard = () => {
 
   const totalCost = config.price + extraCost + swapCharges;
 
+  // Debug pricing
+  console.log("Pricing debug:", {
+    tier,
+    selectedProtectionsLength: selectedProtections.length,
+    included: config.included,
+    extraProtections,
+    extraCost,
+    basePrice: config.price,
+    totalCost,
+    addonsPrice: config.addonsPrice,
+  });
+
   // Helper function to determine if a protection should show add-on indicator
   const shouldShowAddOnIndicator = (protection) => {
     // Check if this protection is tracked as an add-on
@@ -79,10 +152,21 @@ const Dashboard = () => {
   const handleToggle = (protection) => {
     const isSelected = selectedProtections.includes(protection);
     const includedCount = config.included;
-    const maxProtections =
-      tier === "Alpha" ? Infinity : config.included + config.addons;
+    const maxProtections = tier === "Alpha" ? Infinity : tierConfig[tier].max;
     const currentCount = selectedProtections.length;
     const isNotCurrentlySelected = !isSelected;
+
+    // Debug logging
+    console.log("handleToggle debug:", {
+      protection,
+      tier,
+      includedCount,
+      maxProtections,
+      currentCount,
+      isSelected,
+      isNotCurrentlySelected,
+      tierConfig: tierConfig[tier],
+    });
 
     // Check if we're in swap mode (user just unclicked a protection)
     if (isInSwapMode && removedProtection && isNotCurrentlySelected) {
@@ -132,21 +216,21 @@ const Dashboard = () => {
         setShowBillingModal(true);
         return;
       } else {
-        // Unclicking a selected protection: this creates a swap opportunity
-        const newProtections = selectedProtections.filter(
-          (p) => p !== protection
+        // Unclicking a selected protection: just remove it (no swap during add-on selection)
+        setSelectedProtections(
+          selectedProtections.filter((p) => p !== protection)
         );
-        setSelectedProtections(newProtections);
-        // Store the removed protection for potential swap
-        setRemovedProtection(protection);
-        setIsInSwapMode(true);
         return;
       }
     }
-    // 4. If user has > included protections (add-ons)
+    // 4. If user has > included protections (add-ons) - this means they've already paid for add-ons
     if (currentCount > includedCount) {
-      // If clicking a selected protection: this creates a swap opportunity
-      if (isSelected) {
+      // Check if this protection is a paid add-on (beyond included count)
+      const protectionIndex = selectedProtections.indexOf(protection);
+      const isPaidAddOn = protectionIndex >= includedCount;
+
+      // If clicking a selected protection: this creates a swap opportunity (only for paid add-ons)
+      if (isSelected && isPaidAddOn) {
         const newProtections = selectedProtections.filter(
           (p) => p !== protection
         );
@@ -156,8 +240,38 @@ const Dashboard = () => {
         setIsInSwapMode(true);
         return;
       }
-      // If not at max, allow add-on (show billing modal)
+
+      // If clicking a selected protection that's included (not paid): just remove it
+      if (isSelected && !isPaidAddOn) {
+        setSelectedProtections(
+          selectedProtections.filter((p) => p !== protection)
+        );
+        return;
+      }
+
+      // If not at max, check if we're in swap mode first
       if (currentCount < maxProtections) {
+        // If we're in swap mode, treat this as a swap
+        if (isInSwapMode && removedProtection) {
+          const isFreeSwap = swapCount === 0 && tier === "Pup SR.";
+          const isUnlimitedSwap = tier === "Guardian" || tier === "Alpha";
+
+          if (isFreeSwap || isUnlimitedSwap) {
+            setOriginalProtections([...selectedProtections]);
+            setPendingProtection(protection);
+            setShowSwapModal(true);
+          } else {
+            setOriginalProtections([...selectedProtections]);
+            setPendingProtection(protection);
+            setShowSwapChargeModal(true);
+          }
+          // Reset swap mode
+          setIsInSwapMode(false);
+          setRemovedProtection(null);
+          return;
+        }
+
+        // Otherwise, treat as a new add-on
         setPendingProtection(protection);
         setShowBillingModal(true);
         return;
@@ -220,6 +334,7 @@ const Dashboard = () => {
     setShowSwapChargeModal(false);
     setShowSwapSelectionModal(false);
     setShowBillingModal(false); // Ensure billing modal is also closed
+    setShowAddOnConfirmationModal(false);
     setOriginalProtections([]);
     setIsInSwapMode(false);
     setRemovedProtection(null);
@@ -248,11 +363,8 @@ const Dashboard = () => {
   // Handle confirmation of extra protection
   const handleConfirmExtra = () => {
     if (pendingProtection) {
-      setSelectedProtections([...selectedProtections, pendingProtection]);
-      setPendingProtection(null);
       setShowBillingModal(false);
-      // Always redirect to settings for billing update
-      navigate("/settings");
+      setShowAddOnConfirmationModal(true);
     }
   };
 
@@ -262,12 +374,60 @@ const Dashboard = () => {
     setShowBillingModal(false);
   };
 
+  // Handle final confirmation of add-on and navigate to billing
+  const handleConfirmAddOnAndBilling = () => {
+    if (pendingProtection) {
+      setSelectedProtections([...selectedProtections, pendingProtection]);
+      setPendingProtection(null);
+      setShowAddOnConfirmationModal(false);
+      // Navigate to settings for billing update with state
+      navigate("/settings", { state: { fromAddOnConfirmation: true } });
+    }
+  };
+
+  // Handle payment for add-on
+  const handlePayForAddOn = () => {
+    if (pendingProtection) {
+      setSelectedProtections([...selectedProtections, pendingProtection]);
+      setPendingProtection(null);
+      setShowAddOnConfirmationModal(false);
+      // Navigate to payment page with add-on details
+      navigate("/payment", {
+        state: {
+          fromAddOnConfirmation: true,
+          addOnProtection: pendingProtection,
+          addOnCost: config.addonsPrice,
+          currentTier: tier,
+          totalCost: totalCost + config.addonsPrice,
+        },
+      });
+    }
+  };
+
+  // Handle cancellation of add-on confirmation
+  const handleCancelAddOnConfirmation = () => {
+    setPendingProtection(null);
+    setShowAddOnConfirmationModal(false);
+  };
+
   // For Pup SR.: Add one more add-on without updating billing
   const handleAddOneMoreAddon = () => {
+    console.log("handleAddOneMoreAddon called with:", {
+      pendingProtection,
+      selectedProtections: selectedProtections.length,
+      tier,
+      max: tierConfig[tier].max,
+    });
+
     if (pendingProtection) {
       setSelectedProtections([...selectedProtections, pendingProtection]);
       setPendingProtection(null);
       setShowBillingModal(false);
+      // Don't increment swap count for add-ons - only for swaps
+      // Reset swap mode if we were in it
+      setIsInSwapMode(false);
+      setRemovedProtection(null);
+      setOriginalProtections([]);
     }
   };
 
@@ -288,18 +448,27 @@ const Dashboard = () => {
     setShowSwapModal(false);
     setShowSwapChargeModal(false);
     setShowSwapSelectionModal(false);
+    setShowAddOnConfirmationModal(false);
   };
 
   return (
     <div className="flex flex-col h-full flex-1 min-h-0 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl shadow-2xl p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-white">Protection Dashboard</h2>
-        <button
-          onClick={() => navigate("/analytics")}
-          className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-        >
-          View Analytics →
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => navigate("/analytics")}
+            className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+          >
+            View Analytics →
+          </button>
+          <button
+            onClick={() => navigate("/settings")}
+            className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+          >
+            Settings →
+          </button>
+        </div>
       </div>
 
       {/* Tier Selection */}
@@ -406,7 +575,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {allProtections.map((protection, idx) => {
           const isSelected = selectedProtections.includes(protection);
-          const isAtMax = selectedProtections.length >= config.max;
+          const isAtMax = selectedProtections.length >= tierConfig[tier].max;
           const isSelectable = !isAtMax || isSelected; // Can always unselect, but can't select new ones at max
 
           return (
@@ -455,6 +624,27 @@ const Dashboard = () => {
           );
         })}
       </div>
+
+      {/* Add One More Add-on Button for Pup SR. */}
+      {tier === "Pup SR." &&
+        selectedProtections.length < tierConfig[tier].max &&
+        swapCount < tierConfig[tier].swap && (
+          <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+            <div className="text-center">
+              <h3 className="text-yellow-400 font-semibold mb-2">
+                Free Add-on Available
+              </h3>
+              <p className="text-gray-300 text-sm mb-3">
+                You have a free add-on available this month. Select a protection
+                above to add it without additional cost.
+              </p>
+              <div className="text-yellow-400 text-xs">
+                Swaps used: {swapCount}/{tierConfig[tier].swap} | Add-ons
+                remaining: {tierConfig[tier].max - selectedProtections.length}
+              </div>
+            </div>
+          </div>
+        )}
 
       {selectedProtections.length > 0 && (
         <div className="mt-auto p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
@@ -524,6 +714,22 @@ const Dashboard = () => {
                   </span>
                 </div>
                 {tier === "Pup SR." && (
+                  <div className="mt-2 text-center">
+                    <span className="text-sm text-gray-400">
+                      Current add-ons:{" "}
+                      {Math.max(
+                        0,
+                        selectedProtections.length - config.included
+                      )}{" "}
+                      | New add-ons:{" "}
+                      {Math.max(
+                        0,
+                        selectedProtections.length - config.included + 1
+                      )}
+                    </span>
+                  </div>
+                )}
+                {tier === "Pup SR." && (
                   <div className="mt-3 text-center">
                     <span className="text-sm text-green-300 font-semibold">
                       Add-ons remaining:{" "}
@@ -556,21 +762,110 @@ const Dashboard = () => {
                   Free Swap Available
                 </button>
               )}
-              {tier === "Pup SR." &&
-                selectedProtections.length < config.max &&
-                swapCount > 0 && (
+              {(() => {
+                const shouldShowButton =
+                  tier === "Pup SR." &&
+                  selectedProtections.length < tierConfig[tier].max &&
+                  swapCount < tierConfig[tier].swap;
+
+                console.log("Add One More Add-on button condition:", {
+                  tier,
+                  selectedProtectionsLength: selectedProtections.length,
+                  max: tierConfig[tier].max,
+                  swapCount,
+                  maxSwaps: tierConfig[tier].swap,
+                  shouldShowButton,
+                });
+
+                return shouldShowButton ? (
                   <button
                     onClick={handleAddOneMoreAddon}
                     className="flex-1 px-4 py-2 bg-yellow-600 hover:bg-yellow-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
                   >
                     Add One More Add-on
                   </button>
-                )}
+                ) : null;
+              })()}
               <button
                 onClick={handleConfirmExtra}
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
               >
                 Confirm & Update Billing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add-On Confirmation Modal */}
+      {showAddOnConfirmationModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-green-400 text-2xl">✅</span>
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Confirm Add-On Selection
+              </h3>
+              <p className="text-gray-400">
+                You're about to add{" "}
+                <span className="text-green-400 font-semibold">
+                  {pendingProtection}
+                </span>{" "}
+                to your protection plan.
+              </p>
+            </div>
+
+            <div className="bg-gray-800 border border-gray-600 rounded-xl p-4 mb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">Add-On Protection:</span>
+                  <span className="text-green-400 font-semibold">
+                    {pendingProtection}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">Additional Cost:</span>
+                  <span className="text-yellow-400 font-semibold">
+                    +${config.addonsPrice}/mo
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">New Total Protections:</span>
+                  <span className="text-white font-semibold">
+                    {selectedProtections.length + 1}
+                  </span>
+                </div>
+                {tier === "Pup SR." && (
+                  <div className="mt-3 text-center">
+                    <span className="text-sm text-green-300 font-semibold">
+                      Add-ons remaining:{" "}
+                      {2 - (selectedProtections.length - config.included + 1)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={handleCancelAddOnConfirmation}
+                className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmAddOnAndBilling}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+              >
+                Update Billing Later
+              </button>
+              <button
+                onClick={handlePayForAddOn}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105"
+              >
+                💳 Pay Now (${totalCost + config.addonsPrice})
               </button>
             </div>
           </div>
@@ -863,51 +1158,6 @@ const Dashboard = () => {
       )}
     </div>
   );
-};
-
-const tierConfig = {
-  "Pup JR.": {
-    price: 0,
-    included: 3,
-    max: 3,
-    addons: 0,
-    addonsPrice: 10,
-    swapPrice: 5,
-  },
-  "Pup SR.": {
-    price: 99,
-    included: 6,
-    max: 8,
-    addons: 2,
-    addonsPrice: 10,
-    swapPrice: 5,
-  },
-  Guardian: {
-    price: 199,
-    included: 9,
-    max: 12,
-    addons: 3,
-    addonsPrice: 10,
-    swapPrice: 5,
-  },
-  Alpha: {
-    price: 299,
-    included: 12,
-    max: 12,
-    addons: 0,
-    addonsPrice: 10,
-    swapPrice: 5,
-    unlimitedSwap: true,
-  },
-  Enterprise: {
-    price: 2500,
-    included: 15,
-    max: 15,
-    addons: 0,
-    addonsPrice: 10,
-    swapPrice: 5,
-    contact: true,
-  },
 };
 
 export default Dashboard;
