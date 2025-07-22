@@ -5,6 +5,7 @@ const Analytics = () => {
   const { tier, config, selectedProtections } = useTier();
   const [expandedCard, setExpandedCard] = useState(null);
   const [fixingProtection, setFixingProtection] = useState(null);
+  const [fixResults, setFixResults] = useState({});
 
   // Calculate extra protections and pricing
   const extraProtections = Math.max(
@@ -189,10 +190,45 @@ const Analytics = () => {
 
   const handleFixProtection = async (protection) => {
     setFixingProtection(protection);
-    // Simulate fixing process
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Simulate fixing process with detailed steps
+    const steps = [
+      "Initializing scan...",
+      "Analyzing security patterns...",
+      "Detecting vulnerabilities...",
+      "Applying fixes...",
+      "Verifying changes...",
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+
+    // Generate realistic fix results
+    const securityData = getSecurityData(protection);
+    const results = {
+      success: Math.random() > 0.2, // 80% success rate
+      issuesFound: Math.floor(Math.random() * 3) + 1,
+      issuesFixed: Math.floor(Math.random() * 3) + 1,
+      newStatus: Math.random() > 0.3 ? "good" : "warning",
+      improvements: [
+        "Security patterns updated",
+        "Threat detection enhanced",
+        "Response time improved",
+      ],
+      recommendations: [
+        "Monitor for 24 hours",
+        "Review weekly reports",
+        "Consider additional protections",
+      ],
+    };
+
+    setFixResults((prev) => ({
+      ...prev,
+      [protection]: results,
+    }));
+
     setFixingProtection(null);
-    // In a real app, this would call an API to fix the protection
   };
 
   const handleCardClick = (protection) => {
@@ -277,6 +313,7 @@ const Analytics = () => {
           const securityData = getSecurityData(protection);
           const isExpanded = expandedCard === protection;
           const isFixing = fixingProtection === protection;
+          const fixResult = fixResults[protection];
 
           return (
             <div
@@ -380,6 +417,79 @@ const Analytics = () => {
                       ))}
                     </ul>
                   </div>
+
+                  {/* Fix Results */}
+                  {fixResult && (
+                    <div className="mt-4 p-3 bg-gray-800 border border-gray-600 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-semibold text-white">
+                          Fix Results
+                        </h4>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            fixResult.success
+                              ? "bg-green-500 text-white"
+                              : "bg-red-500 text-white"
+                          }`}
+                        >
+                          {fixResult.success ? "SUCCESS" : "ISSUES REMAIN"}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Issues Found:</span>
+                          <span className="text-white">
+                            {fixResult.issuesFound}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Issues Fixed:</span>
+                          <span className="text-green-400">
+                            {fixResult.issuesFixed}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">New Status:</span>
+                          <span
+                            className={`font-semibold ${getStatusColor(
+                              fixResult.newStatus
+                            )}`}
+                          >
+                            {fixResult.newStatus.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-gray-600">
+                        <h5 className="text-xs font-semibold text-green-400 mb-1">
+                          Improvements Made:
+                        </h5>
+                        <ul className="text-xs text-gray-300 space-y-1">
+                          {fixResult.improvements.map((improvement, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="text-green-400 mr-2">✓</span>
+                              {improvement}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-gray-600">
+                        <h5 className="text-xs font-semibold text-blue-400 mb-1">
+                          Next Steps:
+                        </h5>
+                        <ul className="text-xs text-gray-300 space-y-1">
+                          {fixResult.recommendations.map((rec, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="text-blue-400 mr-2">→</span>
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
 
                   {/* One-Click Fix Button */}
                   <button
