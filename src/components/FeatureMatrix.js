@@ -141,7 +141,9 @@ const FeatureMatrix = () => {
                       tierOption === "Enterprise" ? "rounded-r-lg" : ""
                     }`}
                   >
-                    {tierProtections[tierOption].includes(protection) ? (
+                    {tierOption === "Enterprise" ? (
+                      <span className="text-gray-600">-</span>
+                    ) : tierProtections[tierOption].includes(protection) ? (
                       <span className="text-green-400 text-lg">&#10003;</span>
                     ) : (
                       <span className="text-gray-600">-</span>
