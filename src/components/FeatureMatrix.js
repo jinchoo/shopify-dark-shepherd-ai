@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTier } from "./TierContext";
 
 // Define tierConfig locally to match TierContext
@@ -63,7 +63,7 @@ const tierConfig = {
 const tiers = ["Pup JR.", "Pup SR.", "Guardian", "Alpha", "Enterprise"];
 
 const FeatureMatrix = () => {
-  const { tier, allProtections } = useTier();
+  const { tier, allProtections, setTier } = useTier();
 
   // No special CSS needed since Enterprise is now part of the main table
 
@@ -88,6 +88,19 @@ const FeatureMatrix = () => {
     return "-";
   };
 
+  const handleTierClick = (tierOption) => {
+    if (tierOption === "Enterprise") {
+      // Enterprise opens email
+      window.open(
+        "mailto:sales@dark-shepherd.com?subject=Enterprise%20Inquiry",
+        "_blank"
+      );
+    } else {
+      // Other tiers switch directly
+      setTier(tierOption);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full flex-1 min-h-0 p-6 bg-gray-900 rounded-xl shadow-lg">
       <h2 className="text-xl font-bold mb-4 text-white">
@@ -110,15 +123,44 @@ const FeatureMatrix = () => {
                   }`}
                 >
                   {tierOption === "Pup JR." ? (
-                    <span style={{ whiteSpace: "nowrap" }}>Pup JR.</span>
+                    <button
+                      onClick={() => handleTierClick(tierOption)}
+                      className="w-full text-left hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      Pup JR.
+                    </button>
                   ) : tierOption === "Pup SR." ? (
-                    <span style={{ whiteSpace: "nowrap" }}>Pup SR.</span>
+                    <button
+                      onClick={() => handleTierClick(tierOption)}
+                      className="w-full text-left hover:text-white transition-colors duration-200 cursor-pointer"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      Pup SR.
+                    </button>
+                  ) : tierOption === "Guardian" ? (
+                    <button
+                      onClick={() => handleTierClick(tierOption)}
+                      className="w-full text-left hover:text-white transition-colors duration-200 cursor-pointer"
+                    >
+                      Guardian
+                    </button>
+                  ) : tierOption === "Alpha" ? (
+                    <button
+                      onClick={() => handleTierClick(tierOption)}
+                      className="w-full text-left hover:text-white transition-colors duration-200 cursor-pointer"
+                    >
+                      Alpha
+                    </button>
                   ) : tierOption === "Enterprise" ? (
                     <div>
                       <div style={{ whiteSpace: "nowrap" }}>Enterprise</div>
-                      <div className="text-xs text-green-400">
+                      <button
+                        onClick={() => handleTierClick(tierOption)}
+                        className="text-xs text-green-400 hover:text-green-300 cursor-pointer transition-colors duration-200"
+                      >
                         Contact Sales
-                      </div>
+                      </button>
                     </div>
                   ) : (
                     tierOption
@@ -139,10 +181,14 @@ const FeatureMatrix = () => {
                     key={tierOption}
                     className={`px-4 py-2 text-center ${
                       tierOption === "Enterprise" ? "rounded-r-lg" : ""
+                    } ${
+                      tier === tierOption
+                        ? "bg-green-600/20 border border-green-500/30"
+                        : ""
                     }`}
                   >
                     {tierOption === "Enterprise" ? (
-                      <span className="text-gray-600">-</span>
+                      <span className="text-green-400">-</span>
                     ) : tierProtections[tierOption].includes(protection) ? (
                       <span className="text-green-400 text-lg">&#10003;</span>
                     ) : (
@@ -150,9 +196,6 @@ const FeatureMatrix = () => {
                     )}
                   </td>
                 ))}
-                <td className="text-center px-4 py-2 bg-gray-800 text-green-400 font-semibold">
-                  —
-                </td>
               </tr>
             ))}
           </tbody>
