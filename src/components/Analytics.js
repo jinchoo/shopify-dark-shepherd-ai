@@ -5,6 +5,7 @@ const Analytics = () => {
   const { tier, config, selectedProtections } = useTier();
   const [expandedCard, setExpandedCard] = useState(null);
   const [fixingProtection, setFixingProtection] = useState(null);
+  const [fixingAll, setFixingAll] = useState(false);
   const [fixResults, setFixResults] = useState({});
   const [updatedSecurityData, setUpdatedSecurityData] = useState({});
 
@@ -39,6 +40,7 @@ const Analytics = () => {
           "Review alert patterns",
         ],
         fixAction: "Optimize alert settings",
+        estimatedTime: "30 seconds",
       },
       "Basic fraud scan": {
         status: "good",
@@ -53,6 +55,7 @@ const Analytics = () => {
           "Consider advanced fraud tools",
         ],
         fixAction: "Run deep scan",
+        estimatedTime: "2 minutes",
       },
       "Weekly summary": {
         status: "good",
@@ -64,6 +67,7 @@ const Analytics = () => {
         issues: [],
         recommendations: ["Review weekly trends", "Share with team"],
         fixAction: "Generate report",
+        estimatedTime: "15 seconds",
       },
       "DDoS Protection": {
         status: "critical",
@@ -75,6 +79,7 @@ const Analytics = () => {
         issues: ["DDoS attack in progress", "Bandwidth usage at 95%"],
         recommendations: ["Scale up protection", "Contact support immediately"],
         fixAction: "Activate emergency protection",
+        estimatedTime: "10 seconds",
       },
       "Advanced analytics": {
         status: "warning",
@@ -89,6 +94,7 @@ const Analytics = () => {
         ],
         recommendations: ["Update detection rules", "Review recent alerts"],
         fixAction: "Update detection rules",
+        estimatedTime: "1 minute",
       },
       "AI assistant": {
         status: "good",
@@ -100,6 +106,7 @@ const Analytics = () => {
         issues: [],
         recommendations: ["Continue AI learning", "Review suggestions"],
         fixAction: "Run AI analysis",
+        estimatedTime: "3 minutes",
       },
       "PCI compliance tools": {
         status: "warning",
@@ -114,6 +121,7 @@ const Analytics = () => {
           "Update security policies",
         ],
         fixAction: "Run compliance check",
+        estimatedTime: "5 minutes",
       },
       "Real-time threat intelligence": {
         status: "critical",
@@ -128,6 +136,7 @@ const Analytics = () => {
           "Check intelligence sources",
         ],
         fixAction: "Update threat database",
+        estimatedTime: "1 minute",
       },
       "Account takeover (ATO) protection": {
         status: "good",
@@ -139,6 +148,7 @@ const Analytics = () => {
         issues: [],
         recommendations: ["Continue monitoring", "Review login patterns"],
         fixAction: "Run ATO scan",
+        estimatedTime: "45 seconds",
       },
       "Bot mitigation (CAPTCHA, rate limits)": {
         status: "warning",
@@ -150,6 +160,7 @@ const Analytics = () => {
         issues: ["Bot traffic increased 40%", "Rate limits need adjustment"],
         recommendations: ["Increase rate limits", "Update CAPTCHA settings"],
         fixAction: "Adjust rate limits",
+        estimatedTime: "20 seconds",
       },
     };
     return (
@@ -163,6 +174,7 @@ const Analytics = () => {
         issues: [],
         recommendations: ["Continue monitoring"],
         fixAction: "Run security check",
+        estimatedTime: "1 minute",
       }
     );
   };
@@ -255,6 +267,34 @@ const Analytics = () => {
     setFixingProtection(null);
   };
 
+  const handleFixAll = async () => {
+    setFixingAll(true);
+
+    // Get all protections that need fixing (warning or critical status)
+    const protectionsToFix = selectedProtections.filter((protection) => {
+      const data = getSecurityData(protection);
+      return data.status === "warning" || data.status === "critical";
+    });
+
+    // Calculate total estimated time
+    const totalTime = protectionsToFix.reduce((total, protection) => {
+      const data = getSecurityData(protection);
+      const timeStr = data.estimatedTime;
+      const minutes = timeStr.includes("minute") ? parseInt(timeStr) : 0;
+      const seconds = timeStr.includes("second") ? parseInt(timeStr) : 0;
+      return total + minutes * 60 + seconds;
+    }, 0);
+
+    // Fix each protection sequentially
+    for (const protection of protectionsToFix) {
+      await handleFixProtection(protection);
+      // Small delay between fixes
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    setFixingAll(false);
+  };
+
   const handleCardClick = (protection) => {
     setExpandedCard(expandedCard === protection ? null : protection);
   };
@@ -297,7 +337,56 @@ const Analytics = () => {
 
       {/* Security Overview */}
       <div className="mb-6 p-4 bg-blue-900/60 border border-blue-500/30 rounded-xl">
-        <h3 className="text-blue-300 font-semibold mb-2">Security Overview</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-blue-300 font-semibold">Security Overview</h3>
+          {(() => {
+            const needsFixing = selectedProtections.filter((p) => {
+              const data = getSecurityData(p);
+              return data.status === "warning" || data.status === "critical";
+            });
+
+            if (needsFixing.length > 0) {
+              const totalTime = needsFixing.reduce((total, protection) => {
+                const data = getSecurityData(protection);
+                const timeStr = data.estimatedTime;
+                const minutes = timeStr.includes("minute")
+                  ? parseInt(timeStr)
+                  : 0;
+                const seconds = timeStr.includes("second")
+                  ? parseInt(timeStr)
+                  : 0;
+                return total + minutes * 60 + seconds;
+              }, 0);
+
+              const minutes = Math.floor(totalTime / 60);
+              const seconds = totalTime % 60;
+              const timeDisplay =
+                minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+
+              return (
+                <button
+                  onClick={handleFixAll}
+                  disabled={fixingAll}
+                  className={`px-4 py-2 font-semibold rounded-lg transition-all duration-200 ${
+                    fixingAll
+                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white transform hover:scale-105"
+                  }`}
+                >
+                  {fixingAll ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Fixing All...
+                    </div>
+                  ) : (
+                    `🔧 Fix All (${needsFixing.length} items, ~${timeDisplay})`
+                  )}
+                </button>
+              );
+            }
+            return null;
+          })()}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-400">
@@ -514,6 +603,11 @@ const Analytics = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Estimated Time */}
+                  <div className="text-center text-xs text-gray-400 mb-2">
+                    ⏱️ Estimated time: {securityData.estimatedTime}
+                  </div>
 
                   {/* One-Click Fix Button */}
                   <button
