@@ -60,25 +60,12 @@ const tierConfig = {
   },
 };
 
-const tiers = ["Pup JR.", "Pup SR.", "Guardian", "Alpha"];
+const tiers = ["Pup JR.", "Pup SR.", "Guardian", "Alpha", "Enterprise"];
 
 const FeatureMatrix = () => {
   const { tier, allProtections } = useTier();
 
-  // Add CSS to remove only the vertical border between Alpha and Contact Sales
-  React.useEffect(() => {
-    const style = document.createElement("style");
-    style.textContent = `
-      .feature-matrix-table th:nth-child(5) {
-        border-right: none !important;
-      }
-      .feature-matrix-table th:nth-child(6) {
-        border-left: none !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
+  // No special CSS needed since Enterprise is now part of the main table
 
   // For each tier, get the set of included protections (first N from allProtections)
   const tierProtections = {};
@@ -96,6 +83,8 @@ const FeatureMatrix = () => {
     if (tierOption === "Guardian")
       return `Up to 3 add-ons ($10 each), unlimited swaps`;
     if (tierOption === "Alpha") return `Unlimited add-ons, unlimited swaps`;
+    if (tierOption === "Enterprise")
+      return `Unlimited add-ons, unlimited swaps, Contact Sales`;
     return "-";
   };
 
@@ -124,19 +113,18 @@ const FeatureMatrix = () => {
                     <span style={{ whiteSpace: "nowrap" }}>Pup JR.</span>
                   ) : tierOption === "Pup SR." ? (
                     <span style={{ whiteSpace: "nowrap" }}>Pup SR.</span>
+                  ) : tierOption === "Enterprise" ? (
+                    <div>
+                      <div style={{ whiteSpace: "nowrap" }}>Enterprise</div>
+                      <div className="text-xs text-green-400">
+                        Contact Sales
+                      </div>
+                    </div>
                   ) : (
                     tierOption
                   )}
                 </th>
               ))}
-              <th className="px-4 py-2 font-semibold bg-gray-800 text-green-400 rounded-tr-lg">
-                <a
-                  href="/contact-sales"
-                  className="inline-block px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold transition"
-                >
-                  Contact Sales
-                </a>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -150,10 +138,12 @@ const FeatureMatrix = () => {
                   <td
                     key={tierOption}
                     className={`px-4 py-2 text-center ${
-                      tierOption === "Alpha" ? "rounded-r-lg" : ""
+                      tierOption === "Enterprise" ? "rounded-r-lg" : ""
                     }`}
                   >
-                    {tierProtections[tierOption].includes(protection) ? (
+                    {tierOption === "Enterprise" ? (
+                      <span className="text-gray-600">-</span>
+                    ) : tierProtections[tierOption].includes(protection) ? (
                       <span className="text-green-400 text-lg">&#10003;</span>
                     ) : (
                       <span className="text-gray-600">-</span>

@@ -50,12 +50,18 @@ const tierConfig = {
     unlimitedSwap: true,
     unlimitedProtection: true,
   },
-  // Enterprise: hidden
+  // Enterprise: Contact Sales
   Enterprise: {
     price: 2500,
     included: 15,
-    max: 15,
-    extra: 0,
+    max: Infinity, // Unlimited protections
+    extra: Infinity,
+    addons: Infinity,
+    addonsPrice: 0,
+    swap: Infinity,
+    swapPrice: 0,
+    unlimitedSwap: true,
+    unlimitedProtection: true,
     contact: true,
   },
 };

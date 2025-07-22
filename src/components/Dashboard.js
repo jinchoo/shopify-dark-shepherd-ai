@@ -152,7 +152,10 @@ const Dashboard = () => {
   const handleToggle = (protection) => {
     const isSelected = selectedProtections.includes(protection);
     const includedCount = config.included;
-    const maxProtections = tier === "Alpha" ? Infinity : tierConfig[tier].max;
+    const maxProtections =
+      tier === "Alpha" || tier === "Enterprise"
+        ? Infinity
+        : tierConfig[tier].max;
     const currentCount = selectedProtections.length;
     const isNotCurrentlySelected = !isSelected;
 
@@ -172,7 +175,8 @@ const Dashboard = () => {
     if (isInSwapMode && removedProtection && isNotCurrentlySelected) {
       // This is a swap operation
       const isFreeSwap = swapCount === 0 && tier === "Pup SR.";
-      const isUnlimitedSwap = tier === "Guardian" || tier === "Alpha";
+      const isUnlimitedSwap =
+        tier === "Guardian" || tier === "Alpha" || tier === "Enterprise";
 
       if (isFreeSwap || isUnlimitedSwap) {
         setOriginalProtections([...selectedProtections]);
@@ -254,7 +258,8 @@ const Dashboard = () => {
         // If we just removed a protection (creating swap opportunity), treat as swap
         if (removedProtection) {
           const isFreeSwap = swapCount === 0 && tier === "Pup SR.";
-          const isUnlimitedSwap = tier === "Guardian" || tier === "Alpha";
+          const isUnlimitedSwap =
+            tier === "Guardian" || tier === "Alpha" || tier === "Enterprise";
 
           if (isFreeSwap || isUnlimitedSwap) {
             setOriginalProtections([...selectedProtections]);
@@ -538,6 +543,8 @@ const Dashboard = () => {
           {tier === "Guardian" &&
             "Up to 3 add-ons ($10 each), unlimited swaps."}
           {tier === "Alpha" && "Unlimited add-ons, unlimited swaps."}
+          {tier === "Enterprise" &&
+            "Unlimited add-ons, unlimited swaps, Contact Sales."}
         </span>
       </div>
 
@@ -1017,6 +1024,13 @@ const Dashboard = () => {
                   </div>
                 )}
                 {tier === "Alpha" && (
+                  <div className="mt-3 text-center">
+                    <span className="text-sm text-green-300 font-semibold">
+                      Unlimited swaps included
+                    </span>
+                  </div>
+                )}
+                {tier === "Enterprise" && (
                   <div className="mt-3 text-center">
                     <span className="text-sm text-green-300 font-semibold">
                       Unlimited swaps included
