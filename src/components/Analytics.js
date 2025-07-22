@@ -6,6 +6,7 @@ const Analytics = () => {
   const [expandedCard, setExpandedCard] = useState(null);
   const [fixingProtection, setFixingProtection] = useState(null);
   const [fixResults, setFixResults] = useState({});
+  const [updatedSecurityData, setUpdatedSecurityData] = useState({});
 
   // Calculate extra protections and pricing
   const extraProtections = Math.max(
@@ -17,6 +18,10 @@ const Analytics = () => {
 
   // Security data for each protection
   const getSecurityData = (protection) => {
+    // Check if we have updated data for this protection
+    if (updatedSecurityData[protection]) {
+      return updatedSecurityData[protection];
+    }
     const data = {
       "Basic alerts": {
         status: "warning",
@@ -226,6 +231,25 @@ const Analytics = () => {
     setFixResults((prev) => ({
       ...prev,
       [protection]: results,
+    }));
+
+    // Update the security data to reflect the fix
+    const originalData = getSecurityData(protection);
+    const updatedData = {
+      ...originalData,
+      status: results.newStatus,
+      threatLevel: results.newStatus === "good" ? "Low" : "Medium",
+      successRate: Math.min(
+        100,
+        originalData.successRate + (results.success ? 5 : 2)
+      ),
+      lastUpdated: "Just now",
+      issues: results.success ? [] : originalData.issues.slice(0, 1), // Remove some issues if successful
+    };
+
+    setUpdatedSecurityData((prev) => ({
+      ...prev,
+      [protection]: updatedData,
     }));
 
     setFixingProtection(null);
